@@ -27,18 +27,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      - name: Build and run Docker Compose services
+      - name: Verify requirements file
         run: |
-          docker-compose up -d --build
+          if [ ! -f requirements.txt ]; then echo "requirements.txt not found"; exit 1; fi
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Build and run Docker Compose services
+        run: |
+          docker-compose up -d --build
+
+      - name: Verify tests directory
+        run: |
+          if [ ! -d tests ]; then echo "tests directory not found"; exit 1; fi
+          if [ ! -f tests/__init__.py ]; then echo "tests/__init__.py not found"; exit 1; fi
+
       - name: Run unit tests
         run: |
-          python -m unittest discover -s tests
+          python -m unittest discover -s $(pwd)/tests
 
       - name: Tear down Docker Compose services
         run: |
